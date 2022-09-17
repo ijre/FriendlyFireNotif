@@ -1,0 +1,201 @@
+#include <sourcemod>
+#include <sdkhooks>
+
+public Plugin myinfo =
+{
+  author = "ijre",
+  name = "Friendly Fire Notification",
+  version = "0.1"
+};
+
+#define strSize 192
+
+static char generalQuotes[42][strSize] =
+{
+  "\"So it was wabbit season after all...\" - %V",
+  "\"Tis but a scratch.\" - %V",
+  "\"Ouchies.\" - %V",
+  "\"New bottom surgery just dropped.\" - %V",
+  "\"There's some weight off my shoulders.\" - %V",
+  "\"I guess you CAN hit a bull's behind with a shovel.\" - %V",
+  "\"Pretend I'm the messanger (don't shoot the messanger).\" - %V",
+  "\"I see eyes aren't a part of the Valve Complete Pack bundle.\" - %V",
+  "\"I will pay you 50 dollars to not shoot me again.\" - %V",
+  "\"Ow.\" - %V",
+  "\"%O, I'll take that gun away from you!\" - %V",
+  "\"%O could never win the gnome game on their own.\" - %V",
+  "\"Blimey.\" - %V",
+  "\"And they said that college was going to cost me an arm and a leg.\" - %V",
+  "\"I will never biologically recover from this.\" - %V",
+  "\"At least you'll be safe from the zombies, since they go after people with brains.\" - %V",
+  "\"Shotgun mains should pay higher taxes.\" - %V",
+  "\"Jeff Bezos is a shotgun main.\" - %V",
+  "\"Hey, I am not Kurt Cobain, direct that shotgun somewhere else.\" - %V",
+  "\"Excuseeeeeeeeeeeeeeeeeeeeeeeeee me, princess?! EXCUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUSE ME, PRINCESS?!\" - %V",
+  "\"If my ears weren't blown off, they'd be ringing.\" - %V",
+  "\"GET GOOD. GET LMAO BOX.\" - %V",
+  "\"Stop shooting me.\" - %V",
+  "\"Stop that.\" - %V",
+  "\"You're lucky I don't have burst.\" - %V",
+  "\"Ahh...! My suit...!\" - %V",
+  "\"Damnit, that was my good leg.\" - %V",
+  "\"Not my right arm, I need that to play The Elder Scrolls: Blades!\" - %V",
+  "\"So much for aimbot accusations.\" - %V",
+  "\"If you shoot me one more time, I'm kicking you 10 seconds before the end of the campaign.\" - %V",
+  "\"Like Charles Xavier, I am both smarter than you and now wheelchair bound.\" - %V",
+  "\"I needed that liver to pay for my loanshark debts.\" - %V",
+  "\"You shot my pinkie finger! How am I supposed to look pretentious while drinking coffee now?\" - %V",
+  "\"The zombies would never be able to eat your smooth brain, their teeth would glide off.\" - %V",
+  "\"%O Are you being /srs or /j right now??\" - %V",
+  "\"My ass is grass, and you're the lawnmower.\" - %V",
+  "\"Tis but a flesh wound.\" - %V",
+  "\"Pain pills don't help if you have no limbs in which to feel pain.\" - %V",
+  "\"I feel like an American journalist, and %O is the CIA.\" - %V",
+  "\"That does it. [Continue]\" - %V",
+  "\"That could have gone better, but it definitely could have gone worse.\" - %V",
+  "\"Someone patch me up.\" - %V"
+}
+
+static char incapQuotes[33][strSize] =
+{
+  "\"ARGH I'M DYING- I NEED A MEDIC BAG!\" - %V",
+  "\"Making a strategic retreat.\" - %V",
+  "\"BWUARGH!\" - %V",
+  "\"Green, Green, what's your problem, Green?\" - %V",
+  "\"Amän KUKEN!\" - %V",
+  "\"That hurt.\" - %V",
+  "\"I am not a barn door, so stop LARPing as a banjo.\" - %V",
+  "\"There goes my benefits.\" - %V",
+  "\"So much for that medkit.\" - %V",
+  "\"And here I was hoping to retire in peace.\" - %V",
+  "\"Get me back up, or I'll haunt you in the afterlife.\" - %V",
+  "\"Soon I can't tell my tales anymore.\" - %V",
+  "\"That could have gone better, and it definitely couldn't have gone worse.\" - %V",
+  "\"So this is what the Boomer feels like.\" - %V",
+  "\"Did you know that it's really easy to hack your 3DS?\" - %V",
+  "\"Cowa-bummer, dude\" - %O",
+  "\"I hope I can get back to my bloodstain before I die again.\" - %V",
+  "\"You better heal me once you res me.\" - %V",
+  "\"Do you have pain pills in your inventory?\" - %V",
+  "\"I'll settle for an adrenaline shot.\" - %V",
+  "\"Someone kiss my boo-boo to make the pain go away.\" - %V",
+  "\"If this was CS:GO you'd be kicked already.\" - %V",
+  "\"You'd make a great versus player (as the infected).\" - %V",
+  "\"My ass is being ravaged and all I can do is transmute my melee weapon into a dinky pistol.\" - %V",
+  "\"If only I could aim straight after having my pelvis blown off.\" - %V",
+  "\"I'd shoot you back if you didn't sever my spine. \" - %V",
+  "\"homer is ded.\" - %V",
+  "\"Someone glue me back together. Preferably here, but Hell will do fine.\" - %V",
+  "\"Somebody get Shenlong, 'cause I'm about to fucking die.\" - %V",
+  "\"If there were Mario Party bonus stars in Left 4 Dead 2, you'd get one for most friendly fire incidents.\" - %V",
+  "\"God damnit. Stop that (past tense).\" - %V",
+  "\"They're a 10 but they can't stop team killing.\" - %V",
+  "\"Mmmm yummy dirt and blood haha smaskens mumsfilibaba.\" - %V"
+}
+
+int MAX_GENERAL = 0;
+int MAX_INCAP = 0;
+static bool lateLoad;
+
+public APLRes AskPluginLoad2(Handle plugin, bool late, char[] error, int errorLen)
+{
+  lateLoad = late;
+
+  return APLRes_Success;
+}
+
+public void OnPluginStart()
+{
+  if (lateLoad)
+  {
+    for (int i = 1; i < 18; i++)
+    {
+      if (IsValidEntity(i))
+      {
+        SDKHook(i, SDKHook_OnTakeDamage, OnPlayerDamage);
+      }
+    }
+  }
+
+  MAX_GENERAL = sizeof(generalQuotes);
+  MAX_INCAP = sizeof(incapQuotes);
+}
+
+public void OnClientConnected(int client)
+{
+  SDKHook(client, SDKHook_OnTakeDamage, OnPlayerDamage);
+}
+
+char[] GetQuote(int victim, int attacker, int dmg, int health)
+{
+  char quote[strSize];
+  char victimName[32];
+  char attackerName[32];
+  Format(victimName, 32, "%N", victim);
+  Format(attackerName, 32, "%N", attacker);
+
+  if (health - dmg <= 0 && !GetEntProp(victim, Prop_Send, "m_isIncapacitated"))
+  {
+    quote = "%V when they take %d damage from %O be like: *dies*";
+  }
+  else if (health - dmg <= 0)
+  {
+    PrintToChatAll("%N dealt %d lethal damage to %N", attacker, dmg, victim);
+    quote = incapQuotes[GetRandomInt(0, MAX_INCAP)];
+  }
+  else
+  {
+    PrintToChatAll("%N dealt %d damage to %N", attacker, dmg, victim);
+    quote = generalQuotes[GetRandomInt(0, MAX_GENERAL)];
+  }
+
+  ReplaceString(quote, strSize, "%V", victimName);
+  ReplaceString(quote, strSize, "%O", attackerName);
+
+  return quote;
+}
+
+static int dmgTotal[MAXPLAYERS][MAXPLAYERS];
+
+Action OnPlayerDamage(int victim, int& attacker, int& inflictor, float& damage, int& dmgType, int& wep, float dmgForce[3], float dmgPosition[3], int dmgCustom)
+{
+  if (attacker == 0 || attacker > 18 || victim == attacker || GetClientTeam(victim) != GetClientTeam(attacker) || !damage)
+  {
+    return Plugin_Continue;
+  }
+
+  int health = GetClientHealth(victim);
+  int dmg = RoundToNearest(damage);
+  bool isShotgun = wep == 117 || wep == 118 || wep == 120 || wep == 138; // shotguns
+
+  if (!dmgTotal[attacker][victim])
+  {
+    DataPack data = CreateDataPack();
+    CreateDataTimer(0.1, PlayerHurtTimer, data, TIMER_FLAG_NO_MAPCHANGE);
+
+    data.WriteCell(victim);
+    data.WriteCell(attacker);
+    data.WriteCell(health);
+  }
+  else if (!isShotgun)
+  {
+    PrintToChatAll(GetQuote(victim, attacker, dmg, health), dmg);
+  }
+
+  dmgTotal[attacker][victim] += dmg;
+
+  return Plugin_Continue;
+}
+
+Action PlayerHurtTimer(Handle timer, DataPack data)
+{
+  data.Reset();
+  int victim = data.ReadCell();
+  int attacker = data.ReadCell();
+  int health = data.ReadCell();
+
+  PrintToChatAll(GetQuote(victim, attacker, dmgTotal[attacker][victim], health), dmgTotal[attacker][victim]);
+  dmgTotal[attacker][victim] = 0;
+
+  return Plugin_Continue;
+}
