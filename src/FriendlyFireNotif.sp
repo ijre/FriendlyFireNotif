@@ -153,8 +153,9 @@ public void OnPluginStart()
     }
   }
 
-  MAX_GENERAL = sizeof(generalQuotes);
-  MAX_INCAP = sizeof(incapQuotes);
+  MAX_GENERAL = sizeof(generalQuotes) - 1;
+  MAX_INCAP = sizeof(incapQuotes) - 1;
+  // sizeof() currently returns the incorrect size, probably a good ol breaking change from 1.10 -> 1.11
 }
 
 public void OnClientConnected(int client)
