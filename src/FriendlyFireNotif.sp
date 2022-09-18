@@ -5,7 +5,7 @@ public Plugin myinfo =
 {
   author = "ijre",
   name = "Friendly Fire Notification",
-  version = "0.1"
+  version = "1.0.0"
 };
 
 #define strSize 192
@@ -148,7 +148,7 @@ public void OnPluginStart()
     {
       if (IsValidEntity(i))
       {
-        SDKHook(i, SDKHook_OnTakeDamage, OnPlayerDamage);
+        SDKHook(i, SDKHook_OnTakeDamagePost, OnPlayerDamagePost);
       }
     }
   }
@@ -160,7 +160,7 @@ public void OnPluginStart()
 
 public void OnClientConnected(int client)
 {
-  SDKHook(client, SDKHook_OnTakeDamage, OnPlayerDamage);
+  SDKHook(client, SDKHook_OnTakeDamagePost, OnPlayerDamagePost);
 }
 
 char[] GetQuote(int victim, int attacker, int dmg, int health)
@@ -171,7 +171,7 @@ char[] GetQuote(int victim, int attacker, int dmg, int health)
   Format(victimName, 32, "%N", victim);
   Format(attackerName, 32, "%N", attacker);
 
-  if (health - dmg <= 0 && !GetEntProp(victim, Prop_Send, "m_isIncapacitated"))
+  if (health - dmg <= 0 && !IsPlayerAlive(victim))
   {
     quote = "%V when they take %d damage from %O be like: *dies*";
   }
@@ -194,18 +194,18 @@ char[] GetQuote(int victim, int attacker, int dmg, int health)
 
 static int dmgTotal[MAXPLAYERS][MAXPLAYERS];
 
-Action OnPlayerDamage(int victim, int& attacker, int& inflictor, float& damage, int& dmgType, int& wep, float dmgForce[3], float dmgPosition[3], int dmgCustom)
+void OnPlayerDamagePost(int victim, int attacker, int inflictor, float damage, int dmgType, int wep, float dmgForce[3], float dmgPosition[3], int dmgCustom)
 {
   if (attacker == 0 || attacker > 18 || victim == attacker || GetClientTeam(victim) != GetClientTeam(attacker) || !damage)
   {
-    return Plugin_Continue;
+    return;
   }
 
   int health = GetClientHealth(victim);
   int dmg = RoundToNearest(damage);
-  bool isShotgun = wep == 117 || wep == 118 || wep == 120 || wep == 138; // shotguns
+  bool isShotgun = wep == 67 || wep == 117 || wep == 118 || wep == 120 || wep == 138 || wep == 236 || wep == 351 || wep == 383;
 
-  if (!dmgTotal[attacker][victim])
+  if (!dmgTotal[attacker][victim] && isShotgun)
   {
     DataPack data = CreateDataPack();
     CreateDataTimer(0.1, PlayerHurtTimer, data, TIMER_FLAG_NO_MAPCHANGE);
@@ -217,11 +217,11 @@ Action OnPlayerDamage(int victim, int& attacker, int& inflictor, float& damage, 
   else if (!isShotgun)
   {
     PrintToChatAll(GetQuote(victim, attacker, dmg, health), dmg);
+    dmgTotal[attacker][victim] = 0;
+    return;
   }
 
   dmgTotal[attacker][victim] += dmg;
-
-  return Plugin_Continue;
 }
 
 Action PlayerHurtTimer(Handle timer, DataPack data)
