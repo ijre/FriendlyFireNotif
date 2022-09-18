@@ -10,7 +10,7 @@ public Plugin myinfo =
 
 #define strSize 192
 
-static char generalQuotes[42][strSize] =
+static char generalQuotes[57][strSize] =
 {
   "\"So it was wabbit season after all...\" - %V",
   "\"Tis but a scratch.\" - %V",
@@ -53,10 +53,25 @@ static char generalQuotes[42][strSize] =
   "\"I feel like an American journalist, and %O is the CIA.\" - %V",
   "\"That does it. [Continue]\" - %V",
   "\"That could have gone better, but it definitely could have gone worse.\" - %V",
-  "\"Someone patch me up.\" - %V"
+  "\"Someone patch me up.\" - %V",
+  "\"If only I could evade your shots half as well as I evade my taxes.\" - %V",
+  "\"I got a new breathing hole!\" - %V",
+  "\"Thanks for the sinus rinse.\" - %V",
+  "\"I have become a blood soda fountain\" - %V",
+  "\"Even vampires leave me with more blood.\" - %V",
+  "\"Not my left arm, I need that to hold my Coffee!\" - Todd Howard",
+  "\"Just a few more shots and you can play me like a pan flute.\" - %V",
+  "\"Now I know what a hot pocket feels like.\" - %V",
+  "\"I see my zombie cosplay is working out.\" - %V",
+  "\"And here I thought you couldn't hit anything at all.\" - %V",
+  "\"...And that's how I lost my medical license.",
+  "\"Oof.\" - %V",
+  "\"Holy uncanny photographic mental processes, %O! Who do you think you're shooting at?!\" - %V",
+  "\"Shoutouts to Simpleflips\" - %V",
+  "\"And boom goes the dynamite\" - the dynamite"
 }
 
-static char incapQuotes[33][strSize] =
+static char incapQuotes[54][strSize] =
 {
   "\"ARGH I'M DYING- I NEED A MEDIC BAG!\" - %V",
   "\"Making a strategic retreat.\" - %V",
@@ -90,7 +105,28 @@ static char incapQuotes[33][strSize] =
   "\"If there were Mario Party bonus stars in Left 4 Dead 2, you'd get one for most friendly fire incidents.\" - %V",
   "\"God damnit. Stop that (past tense).\" - %V",
   "\"They're a 10 but they can't stop team killing.\" - %V",
-  "\"Mmmm yummy dirt and blood haha smaskens mumsfilibaba.\" - %V"
+  "\"Mmmm yummy dirt and blood haha smaskens mumsfilibaba.\" - %V",
+  "\"Urghhh... I better call Saul...\" - %V",
+  "\"Thanks, Obama.\" - %V",
+  "\"MAMMA MIA!... WAAAAOOOOOOHHHHHHHH!\" - %V",
+  "\"No-no-no-no!\" - Bain",
+  "\"Guys, I told you to be careful with that stuff!\" - Bain",
+  "\"%O, what have you done? You changed the future!! You've created a time paradox!\" - Colonel Roy Campbell",
+  "\"Screw you guys. I'm gonna go play Minecraft.\" - %V",
+  "\"Please don't let two white women make a podcast about my death!\" - %V",
+  "\"Does this count as sick leave?\" - My boss",
+  "\"Walk it off.\" - %O",
+  "\"Guess I'll die.\" - %V",
+  "\"Take me to the land of U.M.A...!\" - %V",
+  "\"Erectin' a statue of a moron.\" - %O",
+  "\"%V be like 'I have my whole life ahead of me' No you don't, the %O is coming :laughingcryingemoji:",
+  "\"My i-frames ran out.\" - %V",
+  "\"I saw my life flash before %O's eyes.\" - %V",
+  "\"MEDIC!\" - %V",
+  "\"My blood! %O shot out all my blood!\" - %V",
+  "\"%O wasn't lying, that ass can fart.\" - %V",
+  "\"I feel like a rat in a KFC frier.\" - %V",
+  "\"I have become death, the destroyer of %V\" - %O"
 }
 
 int MAX_GENERAL = 0;
