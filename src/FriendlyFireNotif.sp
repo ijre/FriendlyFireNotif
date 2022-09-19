@@ -203,9 +203,8 @@ void OnPlayerDamagePost(int victim, int attacker, int inflictor, float damage, i
 
   int health = GetClientHealth(victim);
   int dmg = RoundToNearest(damage);
-  bool isShotgun = wep == 67 || wep == 117 || wep == 118 || wep == 120 || wep == 138 || wep == 236 || wep == 351 || wep == 383;
 
-  if (!dmgTotal[attacker][victim] && isShotgun)
+  if (!dmgTotal[attacker][victim])
   {
     DataPack data = CreateDataPack();
     CreateDataTimer(0.1, PlayerHurtTimer, data, TIMER_FLAG_NO_MAPCHANGE);
@@ -213,12 +212,6 @@ void OnPlayerDamagePost(int victim, int attacker, int inflictor, float damage, i
     data.WriteCell(victim);
     data.WriteCell(attacker);
     data.WriteCell(health);
-  }
-  else if (!isShotgun)
-  {
-    PrintToChatAll(GetQuote(victim, attacker, dmg, health), dmg);
-    dmgTotal[attacker][victim] = 0;
-    return;
   }
 
   dmgTotal[attacker][victim] += dmg;
@@ -233,6 +226,17 @@ Action PlayerHurtTimer(Handle timer, DataPack data)
 
   PrintToChatAll(GetQuote(victim, attacker, dmgTotal[attacker][victim], health), dmgTotal[attacker][victim]);
   dmgTotal[attacker][victim] = 0;
+
+  return Plugin_Continue;
+}
+
+public Action OnPlayerRunCmd(int client, int& buttons)
+{
+  if (GetEntPropEnt(client, Prop_Send, "m_hGroundEntity") == -1 && buttons & IN_JUMP)
+  {
+    buttons &= ~IN_JUMP;
+    return Plugin_Changed;
+  }
 
   return Plugin_Continue;
 }
