@@ -10,7 +10,7 @@ public Plugin myinfo =
 
 #define strSize 192
 
-static char generalQuotes[57][strSize] =
+static char generalQuotes[58][strSize] =
 {
   "\"So it was wabbit season after all...\" - %V",
   "\"Tis but a scratch.\" - %V",
@@ -33,7 +33,7 @@ static char generalQuotes[57][strSize] =
   "\"Hey, I am not Kurt Cobain, direct that shotgun somewhere else.\" - %V",
   "\"Excuseeeeeeeeeeeeeeeeeeeeeeeeee me, princess?! EXCUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUSE ME, PRINCESS?!\" - %V",
   "\"If my ears weren't blown off, they'd be ringing.\" - %V",
-  "\"GET GOOD. GET LMAO BOX.\" - %V",
+  "\"GET GOOD. GET LMAOBOX.\" - %V",
   "\"Stop shooting me.\" - %V",
   "\"Stop that.\" - %V",
   "\"You're lucky I don't have burst.\" - %V",
@@ -68,7 +68,8 @@ static char generalQuotes[57][strSize] =
   "\"Oof.\" - %V",
   "\"Holy uncanny photographic mental processes, %O! Who do you think you're shooting at?!\" - %V",
   "\"Shoutouts to Simpleflips\" - %V",
-  "\"And boom goes the dynamite\" - the dynamite"
+  "\"And boom goes the dynamite\" - the dynamite",
+  "\"Balls\" - Zeli"
 }
 
 static char incapQuotes[54][strSize] =
@@ -224,15 +225,27 @@ Action PlayerHurtTimer(Handle timer, DataPack data)
   int attacker = data.ReadCell();
   int health = data.ReadCell();
 
-  PrintToChatAll(GetQuote(victim, attacker, dmgTotal[attacker][victim], health), dmgTotal[attacker][victim]);
+  if (AttackWillActuallyHit(victim))
+  {
+    PrintToChatAll(GetQuote(victim, attacker, dmgTotal[attacker][victim], health), dmgTotal[attacker][victim]);
+  }
+
   dmgTotal[attacker][victim] = 0;
 
   return Plugin_Continue;
 }
 
+bool AttackWillActuallyHit(int client) // it's insane that i even need to write this code; valve why do you send these events if they arent going to deal any damage
+{
+  return \
+  !GetEntProp(client, Prop_Send, "m_isProneTongueDrag")
+  &&
+  GetEntPropFloat(client, Prop_Send, "m_knockdownTimer") < GetGameTime();
+}
+
 public Action OnPlayerRunCmd(int client, int& buttons)
 {
-  if (GetEntPropEnt(client, Prop_Send, "m_hGroundEntity") == -1 && buttons & IN_JUMP)
+  if (GetEntityMoveType(client) == MOVETYPE_WALK && GetEntPropEnt(client, Prop_Send, "m_hGroundEntity") == -1 && buttons & IN_JUMP)
   {
     buttons &= ~IN_JUMP;
     return Plugin_Changed;
