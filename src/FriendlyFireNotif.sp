@@ -158,7 +158,7 @@ public void OnPluginStart()
   // sizeof() currently returns the incorrect size, probably a good ol breaking change from 1.10 -> 1.11
 }
 
-public void OnClientConnected(int client)
+public void OnClientPutInServer(int client)
 {
   SDKHook(client, SDKHook_OnTakeDamagePost, OnPlayerDamagePost);
 }
