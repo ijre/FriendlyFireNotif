@@ -72,7 +72,7 @@ static char generalQuotes[58][strSize] =
   "\"Balls\" - Zeli"
 }
 
-static char incapQuotes[54][strSize] =
+static char incapQuotes[55][strSize] =
 {
   "\"ARGH I'M DYING- I NEED A MEDIC BAG!\" - %V",
   "\"Making a strategic retreat.\" - %V",
@@ -127,7 +127,8 @@ static char incapQuotes[54][strSize] =
   "\"My blood! %O shot out all my blood!\" - %V",
   "\"%O wasn't lying, that ass can fart.\" - %V",
   "\"I feel like a rat in a KFC frier.\" - %V",
-  "\"I have become death, the destroyer of %V\" - %O"
+  "\"I have become death, the destroyer of %V\" - %O",
+  "\"%V is in a pickle!\" - Bain"
 }
 
 int MAX_GENERAL = 0;
@@ -241,15 +242,4 @@ bool AttackWillActuallyHit(int client) // it's insane that i even need to write 
   !GetEntProp(client, Prop_Send, "m_isProneTongueDrag")
   &&
   GetEntPropFloat(client, Prop_Send, "m_knockdownTimer") < GetGameTime();
-}
-
-public Action OnPlayerRunCmd(int client, int& buttons)
-{
-  if (GetEntityMoveType(client) == MOVETYPE_WALK && GetEntPropEnt(client, Prop_Send, "m_hGroundEntity") == -1 && buttons & IN_JUMP)
-  {
-    buttons &= ~IN_JUMP;
-    return Plugin_Changed;
-  }
-
-  return Plugin_Continue;
 }
