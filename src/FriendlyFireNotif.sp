@@ -173,7 +173,16 @@ char[] GetQuote(int victim, int attacker, int dmg, int health)
   Format(victimName, 32, "%N", victim);
   Format(attackerName, 32, "%N", attacker);
 
-  if (health - dmg <= 0 && !IsPlayerAlive(victim))
+  if (!dmg && IsFakeClient(attacker))
+  {
+    quote = "";
+    return quote;
+  }
+  else if (!dmg && !IsFakeClient(attacker))
+  {
+    quote = "%O landed a Phantom Hit on %V!";
+  }
+  else if (health - dmg <= 0 && !IsPlayerAlive(victim))
   {
     quote = "%V when they take %d damage from %O be like: *dies*";
   }
@@ -198,7 +207,7 @@ static int dmgTotal[MAXPLAYERS][MAXPLAYERS];
 
 void OnPlayerDamagePost(int victim, int attacker, int inflictor, float damage, int dmgType, int wep, float dmgForce[3], float dmgPosition[3], int dmgCustom)
 {
-  if (attacker == 0 || attacker > 18 || victim == attacker || GetClientTeam(victim) != GetClientTeam(attacker) || !damage)
+  if (attacker == 0 || attacker > 18 || victim == attacker || GetClientTeam(victim) != GetClientTeam(attacker))
   {
     return;
   }
@@ -228,7 +237,13 @@ Action PlayerHurtTimer(Handle timer, DataPack data)
 
   if (AttackWillActuallyHit(victim))
   {
-    PrintToChatAll(GetQuote(victim, attacker, dmgTotal[attacker][victim], health), dmgTotal[attacker][victim]);
+    char quote[strSize];
+    quote = GetQuote(victim, attacker, dmgTotal[attacker][victim], health);
+
+    if (strncmp(quote, "-1", 2))
+    {
+      PrintToChatAll(quote, dmgTotal[attacker][victim]);
+    }
   }
 
   dmgTotal[attacker][victim] = 0;
@@ -239,7 +254,13 @@ Action PlayerHurtTimer(Handle timer, DataPack data)
 bool AttackWillActuallyHit(int client) // it's insane that i even need to write this code; valve why do you send these events if they arent going to deal any damage
 {
   return \
-  !GetEntProp(client, Prop_Send, "m_isProneTongueDrag")
+  GetEntPropEnt(client, Prop_Send, "m_pounceAttacker") == -1
+  &&
+  GetEntPropEnt(client, Prop_Send, "m_pummelAttacker") == -1
+  &&
+  GetEntPropEnt(client, Prop_Send, "m_tongueOwner") == -1
+  &&
+  GetEntPropEnt(client, Prop_Send, "m_reviveOwner") == -1
   &&
   GetEntPropFloat(client, Prop_Send, "m_knockdownTimer") < GetGameTime();
 }
