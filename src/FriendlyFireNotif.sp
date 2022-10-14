@@ -212,7 +212,7 @@ void OnPlayerDamagePost(int victim, int attacker, int inflictor, float damage, i
     return;
   }
 
-  int health = GetClientHealth(victim);
+  int health = GetActualHealth(victim);
   int dmg = RoundToNearest(damage);
 
   if (!dmgTotal[attacker][victim])
@@ -249,6 +249,27 @@ Action PlayerHurtTimer(Handle timer, DataPack data)
   dmgTotal[attacker][victim] = 0;
 
   return Plugin_Continue;
+}
+
+int GetActualHealth(const int client)
+{
+  int permHealth = GetClientHealth(client);
+  float tempBuffer = GetEntPropFloat(client, Prop_Send, "m_healthBuffer");
+
+  if (tempBuffer <= 0.0)
+  {
+    return permHealth;
+  }
+
+  float bufferTime = GetEntPropFloat(client, Prop_Send, "m_healthBufferTime");
+  float decay = 1.0 / GetConVarFloat(FindConVar("pain_pills_decay_rate"));
+
+  return permHealth + Max(0, RoundToFloor(tempBuffer - ((GetGameTime() - bufferTime) / decay)));
+}
+
+int Max(int a, int b)
+{
+  return a >= b ? a : b;
 }
 
 bool AttackWillActuallyHit(int client) // it's insane that i even need to write this code; valve why do you send these events if they arent going to deal any damage
