@@ -70,7 +70,7 @@ static char generalQuotes[58][strSize] =
   "\"Shoutouts to Simpleflips\" - %V",
   "\"And boom goes the dynamite\" - the dynamite",
   "\"Balls\" - Zeli"
-}
+};
 
 static char incapQuotes[55][strSize] =
 {
@@ -129,22 +129,26 @@ static char incapQuotes[55][strSize] =
   "\"I feel like a rat in a KFC frier.\" - %V",
   "\"I have become death, the destroyer of %V\" - %O",
   "\"%V is in a pickle!\" - Bain"
-}
+};
 
 int MAX_GENERAL = 0;
 int MAX_INCAP = 0;
-static bool lateLoad;
+
+static int DmgTotal[MAXPLAYERS][MAXPLAYERS];
+static bool PrevIncapState[18];
+
+static bool LateLoad;
 
 public APLRes AskPluginLoad2(Handle plugin, bool late, char[] error, int errorLen)
 {
-  lateLoad = late;
+  LateLoad = late;
 
   return APLRes_Success;
 }
 
 public void OnPluginStart()
 {
-  if (lateLoad)
+  if (LateLoad)
   {
     for (int i = 1; i < 18; i++)
     {
@@ -165,13 +169,13 @@ public void OnClientPutInServer(int client)
   SDKHook(client, SDKHook_OnTakeDamagePost, OnPlayerDamagePost);
 }
 
-char[] GetQuote(int victim, int attacker, int dmg, int health)
+char[] GetQuote(int victim, int attacker, int dmg, bool causedIncap)
 {
   char quote[strSize];
   char victimName[32];
   char attackerName[32];
-  Format(victimName, 32, "%N", victim);
-  Format(attackerName, 32, "%N", attacker);
+  Format(victimName, 32, "\x05%N\x01", victim);
+  Format(attackerName, 32, "\x03%N\x01", attacker);
 
   if (!dmg && IsFakeClient(attacker))
   {
@@ -182,50 +186,61 @@ char[] GetQuote(int victim, int attacker, int dmg, int health)
   {
     quote = "%O landed a Phantom Hit on %V!";
   }
-  else if (health - dmg <= 0 && !IsPlayerAlive(victim))
+  else if (!IsPlayerAlive(victim))
   {
-    quote = "%V when they take %d damage from %O be like: *dies*";
+    quote = "%V when they take \x04%d\x01 damage from %O be like: *dies*";
   }
-  else if (health - dmg <= 0)
+  else if (causedIncap)
   {
-    PrintToChatAll("%N dealt %d lethal damage to %N", attacker, dmg, victim);
+    PrintToChatAll("%s dealt \x04%d\x01 lethal damage to %s", attackerName, dmg, victimName);
     quote = incapQuotes[GetRandomInt(0, MAX_INCAP)];
   }
   else
   {
-    PrintToChatAll("%N dealt %d damage to %N", attacker, dmg, victim);
+    PrintToChatAll("%s dealt \x04%d\x01 damage to %s", attackerName, dmg, victimName);
     quote = generalQuotes[GetRandomInt(0, MAX_GENERAL)];
   }
 
   ReplaceString(quote, strSize, "%V", victimName);
   ReplaceString(quote, strSize, "%O", attackerName);
 
+  Format(quote, sizeof(quote), "\x01%s", quote);
   return quote;
 }
 
-static int dmgTotal[MAXPLAYERS][MAXPLAYERS];
-
 void OnPlayerDamagePost(int victim, int attacker, int inflictor, float damage, int dmgType, int wep, float dmgForce[3], float dmgPosition[3], int dmgCustom)
 {
-  if (attacker == 0 || attacker > 18 || victim == attacker || GetClientTeam(victim) != GetClientTeam(attacker))
+  if (attacker > 18)
   {
     return;
   }
 
-  int health = GetActualHealth(victim);
-  int dmg = RoundToNearest(damage);
+  bool currentlyIncapped = !!GetEntProp(victim, Prop_Send, "m_isIncapacitated");
+  bool causedIncap = false;
+  if (PrevIncapState[victim] != currentlyIncapped)
+  {
+    causedIncap = PrevIncapState[victim] == false && currentlyIncapped;
+    PrevIncapState[victim] = !PrevIncapState[victim];
+  }
 
-  if (!dmgTotal[attacker][victim])
+  if (attacker == 0 || victim == attacker || GetClientTeam(victim) != GetClientTeam(attacker))
+  {
+    return;
+  }
+
+  int dmg = RoundToFloor(damage);
+
+  if (!DmgTotal[attacker][victim])
   {
     DataPack data = CreateDataPack();
     CreateDataTimer(0.1, PlayerHurtTimer, data, TIMER_FLAG_NO_MAPCHANGE);
 
     data.WriteCell(victim);
     data.WriteCell(attacker);
-    data.WriteCell(health);
+    data.WriteCell(causedIncap);
   }
 
-  dmgTotal[attacker][victim] += dmg;
+  DmgTotal[attacker][victim] += dmg;
 }
 
 Action PlayerHurtTimer(Handle timer, DataPack data)
@@ -233,43 +248,22 @@ Action PlayerHurtTimer(Handle timer, DataPack data)
   data.Reset();
   int victim = data.ReadCell();
   int attacker = data.ReadCell();
-  int health = data.ReadCell();
+  bool causedIncap = data.ReadCell();
 
   if (AttackWillActuallyHit(victim))
   {
     char quote[strSize];
-    quote = GetQuote(victim, attacker, dmgTotal[attacker][victim], health);
+    quote = GetQuote(victim, attacker, DmgTotal[attacker][victim], causedIncap);
 
     if (strncmp(quote, "-1", 2))
     {
-      PrintToChatAll(quote, dmgTotal[attacker][victim]);
+      PrintToChatAll(quote, DmgTotal[attacker][victim]);
     }
   }
 
-  dmgTotal[attacker][victim] = 0;
+  DmgTotal[attacker][victim] = 0;
 
   return Plugin_Continue;
-}
-
-int GetActualHealth(const int client)
-{
-  int permHealth = GetClientHealth(client);
-  float tempBuffer = GetEntPropFloat(client, Prop_Send, "m_healthBuffer");
-
-  if (tempBuffer <= 0.0)
-  {
-    return permHealth;
-  }
-
-  float bufferTime = GetEntPropFloat(client, Prop_Send, "m_healthBufferTime");
-  float decay = 1.0 / GetConVarFloat(FindConVar("pain_pills_decay_rate"));
-
-  return permHealth + Max(0, RoundToFloor(tempBuffer - ((GetGameTime() - bufferTime) / decay)));
-}
-
-int Max(int a, int b)
-{
-  return a >= b ? a : b;
 }
 
 bool AttackWillActuallyHit(int client) // it's insane that i even need to write this code; valve why do you send these events if they arent going to deal any damage
@@ -280,6 +274,10 @@ bool AttackWillActuallyHit(int client) // it's insane that i even need to write 
   GetEntPropEnt(client, Prop_Send, "m_pummelAttacker") == -1
   &&
   GetEntPropEnt(client, Prop_Send, "m_tongueOwner") == -1
+  &&
+  GetEntPropEnt(client, Prop_Send, "m_carryAttacker") == -1
+  &&
+  GetEntPropEnt(client, Prop_Send, "m_jockeyAttacker") == -1
   &&
   GetEntPropEnt(client, Prop_Send, "m_reviveOwner") == -1
   &&
