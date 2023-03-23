@@ -210,11 +210,6 @@ char[] GetQuote(int victim, int attacker, int dmg, bool causedIncap)
 
 void OnPlayerDamagePost(int victim, int attacker, int inflictor, float damage, int dmgType, int wep, float dmgForce[3], float dmgPosition[3], int dmgCustom)
 {
-  if (attacker > 18)
-  {
-    return;
-  }
-
   bool currentlyIncapped = !!GetEntProp(victim, Prop_Send, "m_isIncapacitated");
   bool causedIncap = false;
   if (PrevIncapState[victim] != currentlyIncapped)
@@ -223,7 +218,7 @@ void OnPlayerDamagePost(int victim, int attacker, int inflictor, float damage, i
     PrevIncapState[victim] = !PrevIncapState[victim];
   }
 
-  if (attacker == 0 || victim == attacker || GetClientTeam(victim) != GetClientTeam(attacker))
+  if (attacker == 0 || attacker > 18 || victim == attacker || GetClientTeam(victim) != GetClientTeam(attacker))
   {
     return;
   }
