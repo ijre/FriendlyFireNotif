@@ -10,7 +10,7 @@ public Plugin myinfo =
 
 #define strSize 192
 
-static char generalQuotes[58][strSize] =
+static char generalQuotes[59][strSize] =
 {
   "\"So it was wabbit season after all...\" - %V",
   "\"Tis but a scratch.\" - %V",
@@ -69,7 +69,8 @@ static char generalQuotes[58][strSize] =
   "\"Holy uncanny photographic mental processes, %O! Who do you think you're shooting at?!\" - %V",
   "\"Shoutouts to Simpleflips\" - %V",
   "\"And boom goes the dynamite\" - the dynamite",
-  "\"Balls\" - Zeli"
+  "\"Balls\" - Zeli",
+  "\"Do backstabbing motherfuckers experience the passage of time differently?\" - %V"
 };
 
 static char incapQuotes[55][strSize] =
@@ -161,7 +162,6 @@ public void OnPluginStart()
 
   MAX_GENERAL = sizeof(generalQuotes) - 1;
   MAX_INCAP = sizeof(incapQuotes) - 1;
-  // sizeof() currently returns the incorrect size, probably a good ol breaking change from 1.10 -> 1.11
 }
 
 public void OnClientPutInServer(int client)
