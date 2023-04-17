@@ -169,6 +169,36 @@ public void OnClientPutInServer(int client)
   SDKHook(client, SDKHook_OnTakeDamagePost, OnPlayerDamagePost);
 }
 
+void OnPlayerDamagePost(int victim, int attacker, int inflictor, float damage, int dmgType, int wep, float dmgForce[3], float dmgPosition[3], int dmgCustom)
+{
+  bool currentlyIncapped = !!GetEntProp(victim, Prop_Send, "m_isIncapacitated");
+  bool causedIncap = false;
+  if (PrevIncapState[victim] != currentlyIncapped)
+  {
+    causedIncap = PrevIncapState[victim] == false && currentlyIncapped;
+    PrevIncapState[victim] = !PrevIncapState[victim];
+  }
+
+  if (attacker == 0 || attacker > 18 || victim == attacker || GetClientTeam(victim) != GetClientTeam(attacker))
+  {
+    return;
+  }
+
+  int dmg = RoundToFloor(damage);
+
+  if (!DmgTotal[attacker][victim])
+  {
+    DataPack data = CreateDataPack();
+    CreateDataTimer(0.1, PlayerHurtTimer, data, TIMER_FLAG_NO_MAPCHANGE);
+
+    data.WriteCell(victim);
+    data.WriteCell(attacker);
+    data.WriteCell(causedIncap);
+  }
+
+  DmgTotal[attacker][victim] += dmg;
+}
+
 char[] GetQuote(int victim, int attacker, int dmg, bool causedIncap)
 {
   char quote[strSize];
@@ -206,36 +236,6 @@ char[] GetQuote(int victim, int attacker, int dmg, bool causedIncap)
 
   Format(quote, sizeof(quote), "\x01%s", quote);
   return quote;
-}
-
-void OnPlayerDamagePost(int victim, int attacker, int inflictor, float damage, int dmgType, int wep, float dmgForce[3], float dmgPosition[3], int dmgCustom)
-{
-  bool currentlyIncapped = !!GetEntProp(victim, Prop_Send, "m_isIncapacitated");
-  bool causedIncap = false;
-  if (PrevIncapState[victim] != currentlyIncapped)
-  {
-    causedIncap = PrevIncapState[victim] == false && currentlyIncapped;
-    PrevIncapState[victim] = !PrevIncapState[victim];
-  }
-
-  if (attacker == 0 || attacker > 18 || victim == attacker || GetClientTeam(victim) != GetClientTeam(attacker))
-  {
-    return;
-  }
-
-  int dmg = RoundToFloor(damage);
-
-  if (!DmgTotal[attacker][victim])
-  {
-    DataPack data = CreateDataPack();
-    CreateDataTimer(0.1, PlayerHurtTimer, data, TIMER_FLAG_NO_MAPCHANGE);
-
-    data.WriteCell(victim);
-    data.WriteCell(attacker);
-    data.WriteCell(causedIncap);
-  }
-
-  DmgTotal[attacker][victim] += dmg;
 }
 
 Action PlayerHurtTimer(Handle timer, DataPack data)
