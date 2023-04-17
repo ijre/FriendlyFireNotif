@@ -1,5 +1,6 @@
 #include <sourcemod>
 #include <sdkhooks>
+#include <left4dhooks>
 
 public Plugin myinfo =
 {
@@ -9,6 +10,8 @@ public Plugin myinfo =
 };
 
 #define strSize 192
+int MAX_GENERAL = 0;
+int MAX_INCAP = 0;
 
 static char generalQuotes[59][strSize] =
 {
@@ -132,11 +135,13 @@ static char incapQuotes[55][strSize] =
   "\"%V is in a pickle!\" - Bain"
 };
 
-int MAX_GENERAL = 0;
-int MAX_INCAP = 0;
+#define L4D2_MAX 18
 
-static int DmgTotal[MAXPLAYERS][MAXPLAYERS];
-static bool PrevIncapState[18];
+ConVar Test;
+
+static int DmgTotal[L4D2_MAX][L4D2_MAX];
+static int PrevHealth[L4D2_MAX] = { -1, ... };
+static bool PrevIncapState[L4D2_MAX];
 
 static bool LateLoad;
 
@@ -149,12 +154,20 @@ public APLRes AskPluginLoad2(Handle plugin, bool late, char[] error, int errorLe
 
 public void OnPluginStart()
 {
+  if (GetEngineVersion() != Engine_Left4Dead2)
+  {
+    ThrowError("[Friendly Fire Notification] This plugin is for Left 4 Dead 2 only!");
+  }
+
+  Test = CreateConVar("sm_ffn_test", "0", "", FCVAR_NOTIFY);
+
   if (LateLoad)
   {
     for (int i = 1; i < 18; i++)
     {
       if (IsValidEntity(i))
       {
+        SDKHook(i, SDKHook_OnTakeDamage, OnPlayerDamage);
         SDKHook(i, SDKHook_OnTakeDamagePost, OnPlayerDamagePost);
       }
     }
@@ -166,7 +179,61 @@ public void OnPluginStart()
 
 public void OnClientPutInServer(int client)
 {
+  SDKHook(client, SDKHook_OnTakeDamage, OnPlayerDamage);
   SDKHook(client, SDKHook_OnTakeDamagePost, OnPlayerDamagePost);
+}
+
+void PrintToChatAllLog(const char[] msgRaw, any ...)
+{
+  char msg[1280];
+  VFormat(msg, sizeof(msg), msgRaw, 2);
+
+  PrintToChatAll(msg);
+  LogMessage(msg);
+}
+
+int ClampLower(int val, int min)
+{
+  return val < min ? min : val;
+}
+
+int GetRealClientHealth(int client)
+{
+  return GetClientHealth(client) + RoundToNearest(L4D_GetTempHealth(client));
+}
+
+Action OnPlayerDamage(int victim, int& attacker, int& inflictor, float& damage, int& dmgType, int& wep, float dmgForce[3], float dmgPosition[3], int dmgCustom)
+{
+#if defined _debug
+  if (attacker == 0 || victim == attacker)
+  {
+    return Plugin_Continue;
+  }
+
+  int attackerTeam = GetClientTeam(attacker);
+  int victimTeam = GetClientTeam(victim);
+
+  if (attacker > 18 || (attackerTeam == L4D_TEAM_INFECTED && attackerTeam != victimTeam))
+  {
+    return Plugin_Stop;
+  }
+
+  if (victimTeam != attackerTeam || victimTeam != L4D_TEAM_SURVIVOR)
+  {
+    return Plugin_Continue;
+  }
+#endif
+
+  if (!DmgTotal[attacker][victim])
+  {
+    PrevHealth[victim] = GetRealClientHealth(victim);
+    if (GetEntProp(victim, Prop_Send, "m_isIncapacitated") && !RoundToFloor(damage))
+    {
+      DmgTotal[attacker][victim] += -1.0; // if you meatshot at specific moments there's a pretty solid chance it will absolutely flood the chat with phantoms; this is a hack to get around it
+    }
+  }
+
+  return Plugin_Continue;
 }
 
 void OnPlayerDamagePost(int victim, int attacker, int inflictor, float damage, int dmgType, int wep, float dmgForce[3], float dmgPosition[3], int dmgCustom)
@@ -189,7 +256,7 @@ void OnPlayerDamagePost(int victim, int attacker, int inflictor, float damage, i
   if (!DmgTotal[attacker][victim])
   {
     DataPack data = CreateDataPack();
-    CreateDataTimer(0.1, PlayerHurtTimer, data, TIMER_FLAG_NO_MAPCHANGE);
+    CreateDataTimer(0.01, PlayerHurtTimer, data, TIMER_FLAG_NO_MAPCHANGE);
 
     data.WriteCell(victim);
     data.WriteCell(attacker);
@@ -245,10 +312,10 @@ Action PlayerHurtTimer(Handle timer, DataPack data)
   int attacker = data.ReadCell();
   bool causedIncap = data.ReadCell();
 
-  if (AttackWillActuallyHit(victim))
+  if (AttackWillActuallyHit(victim, DmgTotal[attacker][victim], causedIncap))
   {
     char quote[strSize];
-    quote = GetQuote(victim, attacker, DmgTotal[attacker][victim], causedIncap);
+    quote = GetQuote(victim, attacker, ClampLower(DmgTotal[attacker][victim], 0), causedIncap);
 
     if (strncmp(quote, "-1", 2))
     {
@@ -261,7 +328,7 @@ Action PlayerHurtTimer(Handle timer, DataPack data)
   return Plugin_Continue;
 }
 
-bool AttackWillActuallyHit(int client) // it's insane that i even need to write this code; valve why do you send these events if they arent going to deal any damage
+bool AttackWillActuallyHit(int client, int dmg, bool& causedIncap)
 {
   return \
   GetEntPropEnt(client, Prop_Send, "m_pounceAttacker") == -1
@@ -276,5 +343,48 @@ bool AttackWillActuallyHit(int client) // it's insane that i even need to write 
   &&
   GetEntPropEnt(client, Prop_Send, "m_reviveOwner") == -1
   &&
-  GetEntPropFloat(client, Prop_Send, "m_knockdownTimer") < GetGameTime();
+  GetEntPropFloat(client, Prop_Send, "m_knockdownTimer") < GetGameTime()
+  &&
+  ValidateVictimHealth(client, dmg, causedIncap);
+}
+
+bool ValidateVictimHealth(int victim, int dmg, bool& causedIncap)
+{
+  if (dmg == -1)
+  {
+    return true;
+  }
+
+  int currentHealth = GetRealClientHealth(victim);
+  int expectedHealth = PrevHealth[victim] - dmg;
+
+  bool trulyHit = currentHealth == expectedHealth;
+  if (!trulyHit)
+  {
+    if (expectedHealth < 0 || currentHealth > PrevHealth[victim])
+    {
+      trulyHit = true;
+      causedIncap = true;
+    }
+  }
+
+  if (Test.BoolValue)
+  {
+    char ending[128] = "";
+    if (trulyHit && Test.BoolValue)
+    {
+      ending = " \nFORCED TO PRINT BY \"sm_ffn_test\"";
+    }
+
+    int diff = currentHealth - expectedHealth;
+
+    PrintToChatAllLog(
+    "\ntarget: \"%N\" \ndmg: %d \nhp: %d, was: %d, expected: %d (differs by %d)%s",
+    victim, dmg,
+    currentHealth, PrevHealth[victim], expectedHealth, diff, ending
+    );
+    PrintToChatAll("----");
+  }
+
+  return trulyHit;
 }
