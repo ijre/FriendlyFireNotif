@@ -137,8 +137,6 @@ static char incapQuotes[55][strSize] =
 
 #define L4D2_MAX 18
 
-ConVar Test;
-
 static int DmgTotal[L4D2_MAX][L4D2_MAX];
 static int PrevHealth[L4D2_MAX] = { -1, ... };
 static bool PrevIncapState[L4D2_MAX];
@@ -147,18 +145,20 @@ static bool LateLoad;
 
 public APLRes AskPluginLoad2(Handle plugin, bool late, char[] error, int errorLen)
 {
+  if (GetEngineVersion() != Engine_Left4Dead2)
+  {
+    StrCat(error, errorLen, "[Friendly Fire Notification] This plugin is for Left 4 Dead 2 only!");
+    return APLRes_Failure;
+  }
+
   LateLoad = late;
 
   return APLRes_Success;
 }
 
+ConVar Test;
 public void OnPluginStart()
 {
-  if (GetEngineVersion() != Engine_Left4Dead2)
-  {
-    ThrowError("[Friendly Fire Notification] This plugin is for Left 4 Dead 2 only!");
-  }
-
   Test = CreateConVar("sm_ffn_test", "0", "", FCVAR_NOTIFY);
 
   if (LateLoad)
