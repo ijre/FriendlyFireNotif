@@ -210,15 +210,27 @@ Action OnPlayerDamage(int victim, int& attacker, int& inflictor, float& damage, 
     return Plugin_Continue;
   }
 
+  if (attacker > L4D2_MAX)
+  {
+    return Plugin_Stop;
+  }
+
   int attackerTeam = GetClientTeam(attacker);
   int victimTeam = GetClientTeam(victim);
 
-  if (attacker > 18 || (attackerTeam == L4D_TEAM_INFECTED && attackerTeam != victimTeam))
+  if (attackerTeam == L4D_TEAM_INFECTED && attackerTeam != victimTeam)
   {
     return Plugin_Stop;
   }
 
   if (victimTeam != attackerTeam || victimTeam != L4D_TEAM_SURVIVOR)
+  {
+    return Plugin_Continue;
+  }
+
+#else
+
+  if (attacker == 0 || attacker > L4D2_MAX || victim == attacker || GetClientTeam(victim) != GetClientTeam(attacker))
   {
     return Plugin_Continue;
   }
