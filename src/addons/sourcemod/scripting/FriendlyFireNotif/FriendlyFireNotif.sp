@@ -2,6 +2,8 @@
 #include <sdkhooks>
 #include <left4dhooks>
 
+#include "Globals.sp"
+
 public Plugin myinfo =
 {
   author = "ijre",
@@ -9,9 +11,6 @@ public Plugin myinfo =
   version = "1.0.0"
 };
 
-#define strSize 192
-int MAX_GENERAL = 0;
-int MAX_INCAP = 0;
 
 static char generalQuotes[59][strSize] =
 {
@@ -135,8 +134,6 @@ static char incapQuotes[55][strSize] =
   "\"%V is in a pickle!\" - Bain"
 };
 
-#define L4D2_MAX 18
-
 static int DmgTotal[L4D2_MAX][L4D2_MAX];
 static int PrevHealth[L4D2_MAX] = { -1, ... };
 static bool PrevIncapState[L4D2_MAX];
@@ -156,7 +153,6 @@ public APLRes AskPluginLoad2(Handle plugin, bool late, char[] error, int errorLe
   return APLRes_Success;
 }
 
-ConVar Test;
 public void OnPluginStart()
 {
   Test = CreateConVar("sm_ffn_test", "0", "", FCVAR_NOTIFY);
