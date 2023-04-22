@@ -1,0 +1,6 @@
+"both"
+{
+  "If my ears weren't blown off, they'd be ringing." - %V
+  "And boom goes the dynamite" - the dynamite
+  "Atom bomb baby, little atom bomb." - %V
+}

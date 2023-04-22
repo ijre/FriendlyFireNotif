@@ -22,7 +22,7 @@
 #define TONFA           17
 #define KNIFE           18
 #define CHAINSAW        19
-#define MAX_CATEGORIES 20
+#define MAX_CATEGORIES  20
 
 #define CONTEXT_HURT 0
 #define CONTEXT_INCAP 1

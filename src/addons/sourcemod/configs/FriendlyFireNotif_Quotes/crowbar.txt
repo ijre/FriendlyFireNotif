@@ -1,0 +1,6 @@
+"both"
+{
+  "Gordon Freeman... in the giblets." - %O
+  "%V didn't pick up the can." - %O
+  "I feel broke and entered into." - %V
+}

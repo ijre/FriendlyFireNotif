@@ -1,0 +1,15 @@
+"both"
+{
+  "Batter up!" - %O
+  "Bonk!" - %O
+  "Say goodbye to ya kneecaps, chucklehead!" - %O
+  "My kneecaps! Now what are the loan sharks going to break?!" - %V
+  "The hole at the center of everything is in the back of your head." - %O
+  "Consider your ass unlocked." - %O
+  "I'm a total trash mammal! (read. roadkill)." - %V
+  "Everything sucks forever." - %V
+  "Gloomy little eel, you are." - %O
+  "You're all just shapes." - %O
+  "Holy shit! %V! Someone hecked up %V! Who... did... this...?" - %R
+  "AAAAAAAAAGH!!!!!" - %V
+}

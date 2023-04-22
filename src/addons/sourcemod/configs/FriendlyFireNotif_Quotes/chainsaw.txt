@@ -1,0 +1,8 @@
+"both"
+{
+  "Let's not remake a massacre" - %V
+  "You couldn't run out of fuel before you got to me?!" - %V
+  "It's not a machine gun, lay off the trigger...!" - %V
+  "Do I look like a tree?!" - %V
+  "Your noodle arms *would* need an automatic melee weapon." - %V
+}

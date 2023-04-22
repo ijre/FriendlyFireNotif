@@ -1,0 +1,6 @@
+"both"
+{
+  "I guess you CAN hit a bull's behind with a shovel." - %V
+  "I'm going to need that shovel for my grave later." - %V
+  "Postal reference." - %V
+}

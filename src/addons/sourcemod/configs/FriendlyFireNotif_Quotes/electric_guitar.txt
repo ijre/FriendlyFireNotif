@@ -1,0 +1,8 @@
+"both"
+{
+  "Hey there, Delilah, what's it like six feet under?" - %O
+  "Stop playing that funky music, white boy!" - %V
+  "This isn't my type of rhythm game." - %V
+  "Showing clear signs of no music theory." - %V
+  "Are you the Pumpkin Head Guy?" - %V
+}

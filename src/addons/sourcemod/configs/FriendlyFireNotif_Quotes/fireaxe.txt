@@ -1,0 +1,5 @@
+"both"
+{
+  "Hey, there's no fire behind me!" - %V
+  "Sorry %V, I thought you were a blocked fire exit." - %O
+}

@@ -1,0 +1,8 @@
+"both"
+{
+  "You got blood on my suit." - %O
+  "With my apologies." - %O
+  "Oh dear, I've made quite a mess." - %O
+  "%O too much for zblock" - %R
+  "admin %O doing it sideways" - %R
+}

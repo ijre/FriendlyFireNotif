@@ -1,0 +1,23 @@
+"hurt"
+{
+  "%O!! What the hell!! Are you trying to kill %V!!?" - %R
+  "%O, Have you gone insane!?" - %R
+  "%O, Stop!!" - %R
+  "You're terrible, %O!!" - %R
+  "Stop it! You'll kill them!" - %R
+}
+
+"incap"
+{
+  "No!! I can't believe it!! %O has gone insane!" - %R
+  "%O, you're a poor excuse for a teammate!..." - %R
+}
+
+"both"
+{
+  "So it was wabbit season after all..." - %V
+  "How could you...? ...Why?" - %V
+  "%O, Have you gone insane!?" - %R
+  "Why did you do it... %O..." - %V
+  "%O..." - %V
+}

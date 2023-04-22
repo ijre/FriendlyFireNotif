@@ -1,0 +1,4 @@
+"both"
+{
+  "I feel like a Rob Zombie poster." - %V
+}

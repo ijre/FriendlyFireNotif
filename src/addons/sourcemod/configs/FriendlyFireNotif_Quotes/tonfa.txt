@@ -1,0 +1,6 @@
+"both"
+{
+  "I don't even wanna know where that thing's been..." - %V
+  "ACAB" - %V
+  "You're holding it wrong." - %V
+}

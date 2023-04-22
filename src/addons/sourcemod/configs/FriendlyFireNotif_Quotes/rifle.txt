@@ -1,0 +1,4 @@
+"both"
+{
+  "You're lucky I don't have burst." - %V
+}

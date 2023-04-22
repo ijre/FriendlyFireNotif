@@ -1,0 +1,5 @@
+"both"
+{
+  "I AM NOT HAY!" - %V
+  "Why don't you go scratch a scarecrow's back with that thing?!" - %V
+}

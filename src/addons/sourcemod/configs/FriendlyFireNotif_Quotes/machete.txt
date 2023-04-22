@@ -1,0 +1,6 @@
+"both"
+{
+  "I'm no tropical forest!" - %V
+  "You'd think a shorter blade would make it easier to aim..." - %V
+  "At this point just season me and serve me whole instead of chopping me up." - %V
+}

@@ -1,0 +1,14 @@
+"both"
+{
+  "You ain't no Samurai cop." - %V
+  "Wooden arm, wooden arm, I've got a wooden arm." - %V
+  "You're as discrete as the Samurai who wielded that sword." - %V
+  "What? Suddenly you're out of words? Figures." - Baiken
+  "I can tolerate you...you've got skill. Too bad you didn't have enough, though." - Baiken
+  "I'm shapeless. Someone cut me free." - Baiken
+  "Better not hold back..." - Baiken
+  "As a retainer of Kazusanosuke, I will face you." - Nagoriyuki
+  "I'll listen to whatever you have to say after the battle." - Nagoriyuki
+  "Only a fool treads the path of the demon lightly." - Nagoriyuki
+  "Refine your skill. You're overreliant on your strength." - Nagoriyuki
+}

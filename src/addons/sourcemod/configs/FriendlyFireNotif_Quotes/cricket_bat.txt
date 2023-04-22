@@ -1,0 +1,5 @@
+"both"
+{
+  "The fact that it's a Cricket bat and not a Baseball bat is what makes it hurt even more." - %O
+  "Is my ass really that wide?" - %V
+}

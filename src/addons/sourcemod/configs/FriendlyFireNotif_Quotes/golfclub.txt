@@ -1,0 +1,10 @@
+"both"
+{
+  "Fore!" - %O
+  "Feive!" - %O
+  "Sicks!" - %O
+  "Sevene!" - %O
+  "Ate!" - %O
+  "Nein!" - %O
+  "I'm swinging a 65536!" - %O
+}
