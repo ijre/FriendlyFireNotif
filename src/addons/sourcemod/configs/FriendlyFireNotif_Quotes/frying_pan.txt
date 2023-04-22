@@ -1,0 +1,11 @@
+"both"
+{
+  "Things are gonna get a little bit strange here!" - %O
+  "The pan - the Strange Pan... It's so... strange..." - %O
+  "Look how weird and kooky it is!" - %O
+  "I don't know what it is but there's something STRANGE goin' on!" - %O
+  "♪ Strange, strange, strange, strange, strange, strange, strange, strange, strange, strange, strange... that's really strange! ♫" - %O
+  "It's gotta have, like, extra range on it. like, look at it - look how far I hit %V... it's got extra range on it - you get yourself a Strange Frying Pan right now!" - %O
+  "Guys, oh my God, guys. My Strange Pan has got to be six figures right now, this is ridiculous!" - %O
+  "Oh! Wow! This frying pan is not Strange! As it turns out, it makes no difference, and nobody cares!" - %O
+}

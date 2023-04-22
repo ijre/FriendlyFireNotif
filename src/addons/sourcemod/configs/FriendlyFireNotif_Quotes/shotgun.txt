@@ -1,0 +1,7 @@
+"both"
+{
+  "And they said that college was going to cost me an arm and a leg." - %V
+  "Shotgun mains should pay higher taxes." - %V
+  "Jeff Bezos is a shotgun main." - %V
+  "Hey, I am not Kurt Cobain, direct that shotgun somewhere else." - %V
+}
