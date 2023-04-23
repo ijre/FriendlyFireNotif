@@ -1,0 +1,35 @@
+name: Compile and Upload For Release
+on:
+  release:
+    types: [ published ]
+
+jobs:
+  upload:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Unpack Includes
+      shell: cmd
+      run: |
+        cd .github
+        mkdir ..\src\addons\sourcemod\plugins\
+        7za.exe x include.7z
+    - name: Build .smxs and Ready For Archiving
+      shell: cmd
+      run: |
+        cd .github
+        spcomp64.exe FriendlyFireNotif.sp -; -i "./include/" -D "../src/addons/sourcemod/scripting/FriendlyFireNotif/"
+        move "..\src\addons\sourcemod\scripting\FriendlyFireNotif\FriendlyFireNotif.smx" "..\src\addons\sourcemod\plugins\"
+    - name: Archive Project
+      shell: cmd
+      run: |
+        ".github/7za.exe" a FriendlyFireNotif.7z ./src/*
+    - name: Upload Project
+      uses: LBPHacker/upload-release-asset@v2
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ github.event.release.upload_url }}
+        asset_path: ./FriendlyFireNotif.7z
+        asset_name: FriendlyFireNotif.7z
+        asset_content_type: application/zip
