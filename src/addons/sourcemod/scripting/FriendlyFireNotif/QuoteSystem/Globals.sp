@@ -24,9 +24,9 @@
 #define CHAINSAW        19
 #define MAX_CATEGORIES  20
 
-#define CONTEXT_HURT 0
+#define CONTEXT_HURT  0
 #define CONTEXT_INCAP 1
-#define MAX_CONTEXTS 2
+#define MAX_CONTEXTS  2
 
 char Quotes[MAX_CATEGORIES][MAX_CONTEXTS][1000][STR_SIZE];
 int QuoteSizes[MAX_CATEGORIES][MAX_CONTEXTS];
