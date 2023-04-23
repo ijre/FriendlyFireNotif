@@ -1,6 +1,6 @@
 #include <sourcemod>
 
-#include "Globals.sp"
+#include "QuoteSys_Globals.sp"
 #include "Helpers.sp"
 
 #define PHANTOM_LOCK_OUT_CD 1.0
