@@ -6,6 +6,20 @@
 #define PHANTOM_LOCK_OUT_CD 1.0
 static float LastPhantom[L4D2_MAX][L4D2_MAX];
 
+#define FAILSAFE_NAMES_SIZE 9
+static char FailsafeNames[FAILSAFE_NAMES_SIZE][32] =
+{
+  "worldspawn",
+  "Dyllon Stejakoski",
+  "Freddy Fazbear",
+  "Sentient 1f98c Emoji",
+  "Mic-san",
+  "ijre (real)",
+  "ijre (fake)",
+  "Lyra Lynx (real)",
+  "Lyra Lynx (fake)"
+};
+
 static char[] GetRandomQuoteFromCategory(int category, int context)
 {
   if (QuoteSizes[category][context] <= 0)
@@ -104,6 +118,79 @@ char[] GetQuote(int victim, int attacker, int dmg, int wep, int dmgType, bool ca
   ReplaceString(quote, STR_SIZE, "%V", victimName);
   ReplaceString(quote, STR_SIZE, "%O", attackerName);
 
+  if (StrContains(quote, "%R") != -1)
+  {
+    bool usedFallback;
+    int speaker = GetRandomSpeaker(victim, attacker, usedFallback);
+
+    if (!usedFallback)
+    {
+      char speakerName[32];
+      Format(speakerName, sizeof(speakerName), "\x04%N\x01", speaker);
+      ReplaceString(quote, STR_SIZE, "%R", speakerName);
+    }
+    else
+    {
+      char speakerName[64];
+      Format(speakerName, sizeof(speakerName), "\x04%s\x01", FailsafeNames[speaker]);
+      ReplaceString(quote, STR_SIZE, "%R", speakerName);
+    }
+  }
+
   Format(quote, sizeof(quote), "\x01%s", quote);
   return quote;
+}
+
+static int GetRandomSpeaker(int victim, int attacker, bool& usedFallback = false)
+{
+  int speaker = -1;
+
+  int team = GetClientTeam(victim);
+
+  int friendlyTeamAlive[L4D2_MAX];
+  int friendlyTeamAliveSize;
+  friendlyTeamAlive = GetAlivePlayersOnTeam(team, friendlyTeamAliveSize);
+
+  int enemyTeam = team == 2 ? 3 : 2;
+  int enemyTeamSize = GetTeamClientCount(enemyTeam);
+
+  if (friendlyTeamAliveSize > 2)
+  {
+    friendlyTeamAlive[victim] = -1;
+    friendlyTeamAlive[attacker] = -1;
+
+    int tries = 0;
+
+    do
+    {
+      speaker = friendlyTeamAlive[GetRandomInt(0, friendlyTeamAliveSize - 1)];
+    } while (speaker <= 0 && ++tries < 100); // surely if it fails that much it's simply destined to fail
+  }
+  else if (enemyTeamSize > 0)
+  {
+    speaker = GetRandomClient(enemyTeam);
+  }
+
+  if (speaker <= 0)
+  {
+    speaker = GetRandomInt(0, FAILSAFE_NAMES_SIZE - 1);
+    usedFallback = true;
+  }
+
+  return speaker;
+}
+
+static int[] GetAlivePlayersOnTeam(int team, int& count)
+{
+  int ret[L4D2_MAX];
+
+  for (int i = 1; i < L4D2_MAX; i++)
+  {
+    if (IsValidEntity(i) && IsClientInGame(i) && GetClientTeam(i) == team && IsPlayerAlive(i))
+    {
+      ret[count++] = i;
+    }
+  }
+
+  return ret;
 }
