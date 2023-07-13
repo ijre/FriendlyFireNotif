@@ -9,7 +9,7 @@ public Plugin myinfo =
 {
   author = "ijre",
   name = "Friendly Fire Notification",
-  version = "1.0.0.0"
+  version = "1.0.0.1"
 };
 
 static int DmgTotal[NEW_MAXPLAYERS][NEW_MAXPLAYERS];
