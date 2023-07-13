@@ -4,7 +4,7 @@
 #include "Helpers.sp"
 
 #define PHANTOM_LOCK_OUT_CD 1.0
-static float LastPhantom[L4D2_MAX][L4D2_MAX];
+static float LastPhantom[NEW_MAXPLAYERS][NEW_MAXPLAYERS];
 
 #define FAILSAFE_NAMES_SIZE 9
 static char FailsafeNames[FAILSAFE_NAMES_SIZE][32] =
@@ -147,7 +147,7 @@ static int GetRandomSpeaker(int victim, int attacker, bool& usedFallback = false
 
   int team = GetClientTeam(victim);
 
-  int friendlyTeamAlive[L4D2_MAX];
+  int friendlyTeamAlive[NEW_MAXPLAYERS];
   int friendlyTeamAliveSize;
   friendlyTeamAlive = GetAlivePlayersOnTeam(team, friendlyTeamAliveSize);
 
@@ -182,9 +182,9 @@ static int GetRandomSpeaker(int victim, int attacker, bool& usedFallback = false
 
 static int[] GetAlivePlayersOnTeam(int team, int& count)
 {
-  int ret[L4D2_MAX];
+  int ret[NEW_MAXPLAYERS];
 
-  for (int i = 1; i < L4D2_MAX; i++)
+  for (int i = 1; i < MaxClients; i++)
   {
     if (IsValidEntity(i) && IsClientInGame(i) && GetClientTeam(i) == team && IsPlayerAlive(i))
     {

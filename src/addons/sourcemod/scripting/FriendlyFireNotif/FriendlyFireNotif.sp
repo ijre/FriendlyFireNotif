@@ -12,9 +12,9 @@ public Plugin myinfo =
   version = "1.0.0.0"
 };
 
-static int DmgTotal[L4D2_MAX][L4D2_MAX];
-static int PrevHealth[L4D2_MAX] = { -1, ... };
-static bool PrevIncapState[L4D2_MAX];
+static int DmgTotal[NEW_MAXPLAYERS][NEW_MAXPLAYERS];
+static int PrevHealth[NEW_MAXPLAYERS] = { -1, ... };
+static bool PrevIncapState[NEW_MAXPLAYERS];
 
 static bool LateLoad;
 
@@ -39,7 +39,7 @@ public void OnPluginStart()
 
   if (LateLoad)
   {
-    for (int i = 1; i < 18; i++)
+    for (int i = 1; i < MaxClients; i++)
     {
       if (IsValidEntity(i))
       {
@@ -83,7 +83,7 @@ Action OnPlayerDamage(int victim, int& attacker, int& inflictor, float& damage, 
     return Plugin_Continue;
   }
 
-  if (attacker > L4D2_MAX)
+  if (attacker > MaxClients)
   {
     return Plugin_Stop;
   }
@@ -103,7 +103,7 @@ Action OnPlayerDamage(int victim, int& attacker, int& inflictor, float& damage, 
 
 #else
 
-  if (attacker == 0 || attacker > L4D2_MAX || victim == attacker || GetClientTeam(victim) != GetClientTeam(attacker))
+  if (attacker == 0 || attacker > MaxClients || victim == attacker || GetClientTeam(victim) != GetClientTeam(attacker))
   {
     return Plugin_Continue;
   }
@@ -127,7 +127,7 @@ void OnPlayerDamagePost(int victim, int attacker, int inflictor, float damage, i
     PrevIncapState[victim] = !PrevIncapState[victim];
   }
 
-  if (attacker == 0 || attacker > 18 || victim == attacker || GetClientTeam(victim) != GetClientTeam(attacker))
+  if (attacker == 0 || attacker > MaxClients || victim == attacker || GetClientTeam(victim) != GetClientTeam(attacker))
   {
     return;
   }
